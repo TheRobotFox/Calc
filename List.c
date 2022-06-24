@@ -56,16 +56,19 @@ void List_clear(List *l)
 {
 	l->size=0;
 }
-void *List_find(List *l, bool (*compare)(void*, void*), void *arg)
+void *Buff_find(char *start, char *end, size_t el_size, bool (*compare)(void*, void*), void *arg)
 {
-	for(char *start=List_start(l), *end=List_end(l); start!=end; start+=l->element_size)
+	for(; start!=end; start+=el_size)
 	{
 		if(compare(start,arg))
 				return start;
 	}
 	return NULL;
 }
-
+void *List_find(List *l, bool (*compare)(void*, void*), void *arg)
+{
+	return Buff_find(List_start(l),List_end(l),l->element_size,compare,arg);
+}
 bool List_append(List *l, const void *element)
 {
 	if(l->size>=l->max)

@@ -27,13 +27,15 @@ struct Func
 	List *args;
 	char *val;
 };
-
+static bool comp_func_name(void *f, void *n);
 static bool comp_func(void *f, void *name);
+static bool comp_internal_func(void *f, void *name);
 static bool comp_vars(void *v, void *name);
+bool func_used(char* name);
 void print(void *a);
 double general_log(double base, double val);
 double root(double a, double b);
-struct {
+struct f_unary{
 	const char *name;
 	double (*func)(double var);
 } f_unary[] = {
@@ -42,7 +44,7 @@ struct {
 	{"cos", cos},
 	{"root", sqrt},
 };
-struct {
+struct f_binary{
 	char *name;
 	double (*func)(double var2, double var);
 } f_binary[] = {
@@ -51,9 +53,11 @@ struct {
 };
 List *vars_global;
 List *argstack;
+List *funcargstack;
 List *functions;
 
 List *argnames;
+struct Func *functmp;
 
 char eval_buf[512];
 %}
@@ -82,6 +86,7 @@ prog:
 		argstack = List_create(sizeof(List*));
 		functions = List_create(sizeof(struct Func));
 		argnames = List_create(sizeof(char*));
+		funcargstack = List_create(sizeof(List*));
 	 }
 	 OPERATIONS
 	 {
@@ -89,6 +94,7 @@ prog:
 		List_free(argstack);
 		List_free(functions);
 		List_free(argnames);
+		List_free(funcargstack);
 	 	puts("Byebye!");
 		exit(0);
 	 }
@@ -122,15 +128,22 @@ DEFVAR:
 				}
 DEFFUNC:
 			 NAME ARGLIST_N ASSIGN{
+			 struct Func *f = List_find(functions,comp_func_name,$1);
+			 if(f)
+			 		functmp=f;
+			 else{
+			 		if(func_used($1))
+						error("Function redefinition");
+					List_append(functions,NULL);
+					functmp = List_get(functions,List_size(functions)-1);
+			 }
 			 lexString();
 			 }STRING{
 			 lexNormal();
-			 struct Func f;
-			 f.name=$1;
-			 f.val=$5;
-			 f.args=argnames;
+			 functmp->name=$1;
+			 functmp->val=$5;
+			 functmp->args=argnames;
 			 argnames=List_create(sizeof(char*));
-			List_append(functions,&f);
 			}
 
 EQUASION:
@@ -177,48 +190,45 @@ EXPR3:
 		char* str;
 		struct Func_search tmp = {$1,List_size($2)};
 		struct Func *f = List_find(functions,comp_func,&tmp);
-		List *locals=List_create(sizeof(struct Variable));
-		List_append(argstack, &locals);
+		List* l=List_create(sizeof( struct Variable));
+		List_append(funcargstack,&l);
 		if(f){
 
+			if(List_size($2)!=List_size(f->args))
+				error("Wrong amount of args");
 
 			struct Variable tmp;
 			for(size_t i=0; i< List_size(f->args); i++)
 			{
 					tmp.val=*(double*)List_get($2,i);
 					tmp.name=List_get(f->args,i);
-					List_append(locals, &tmp);
+					List_append(l,&tmp);
 			}
 			str=f->val;
 		}else{
 			double res;
+
 			switch(List_size($2))
 			{
 			case 1:{
+				struct f_unary *fu;
 				double *var=List_get($2,0);
-				for(size_t i; i<sizeof(f_unary)/sizeof(*f_unary); i++)
-				{
-					if(!strcmp($1,f_unary[i].name)){
-						res=f_unary[i].func(*var);
-						break;
-					}
-				}
+				if(!(fu=Buff_find((char*)f_unary,(char*)f_unary+sizeof(f_unary), sizeof(struct f_unary),comp_internal_func,$1)))
+					error("Unknown function");
+				res=fu->func(*var);
 				break;
 				}
 			case 2: {
 				double *var1=List_get($2,0), *var2=List_get($2,1);
-				for(size_t i; i<sizeof(f_binary)/sizeof(*f_binary); i++)
-				{
-					if(!strcmp($1,f_binary[i].name)){
-						res=f_binary[i].func(*var1,*var2);
-						break;
-					}
-				}
-				break;
+				struct f_binary *fb;
+				if(!(fb=Buff_find((char*)f_binary,(char*)f_binary+sizeof(f_binary), sizeof(struct f_binary),comp_internal_func,$1)))
+					error("Unknown function");
+				fb->func(*var1,*var2);
 				}
 			default:
 				error("Unknown function");
 				break;
+			end:
 			}
 			snprintf(eval_buf,512,"%20lf;",res);
 			str=eval_buf;
@@ -230,8 +240,8 @@ EXPR3:
 		yy_delete_buffer(tmp_buf);
 	 } EXPR SC{
 		$$=$4;
-		printf("%s->%lg\n", $1, $$);
-		List_free(*(List**)List_pop(argstack));
+		List_free($2);
+		List_pop(funcargstack);
 		yypop_buffer_state();
 	}
 
@@ -259,24 +269,25 @@ EXPR6:
 	}
 ARGLIST_V:
   PO{
-	List *l = List_create(sizeof(struct Variable));
-	List_push(argstack,l);
+		List *l = List_create(sizeof(double));
+		List_append(argstack,&l);
 	} ARGS_V PC{
-		$$=*(List**)List_get(argstack,List_size(argstack)-1);
+		$$=*(List**)List_pop(argstack);
 	}
 	| PO PC{
-		$$=*(List**)List_get(argstack,List_size(argstack)-1);
+		$$=List_create(sizeof(double));;
 	}
 	| EXPR6{
-	$$=*(List**)List_get(argstack,List_size(argstack)-1);
-	List_append($$, &$1);
+		$$=List_create(sizeof(double));
+		List_append($$, &$1);
 	}
 ARGS_V:
     ARG_V	| ARGS_V COMMA ARG_V
 
 ARG_V:
    EXPR{
-        List_append(arglist, &$1);
+				List *l=*(List**)List_get(argstack,List_size(argstack)-1);
+        List_append(l, &$1);
 	 }
 ARGLIST_N:
 		PO{
@@ -311,7 +322,7 @@ static bool comp_func(void *f, void *name)
 {
 	struct Func *_f=f;
 	struct Func_search *_name=name;
-	return !(strcmp(_f->name,_name->name)&&(List_size(_f->args)!=_name->args));
+	return (strcmp(_f->name, _name->name)==0) && (List_size(_f->args)==_name->args);
 }
 static bool comp_vars(void *v, void *name)
 {
@@ -322,18 +333,33 @@ static bool comp_vars(void *v, void *name)
 
 struct Variable *getVar(char *name)
 {
-	//List_print(vars_global, print);
-	printf("%d\n", List_size(argstack));
 	struct Variable *var=0;
-	if(List_size(argstack)){
-	List **locals=List_get(argstack,List_size(argstack)-1);
-	var = List_find(*locals, comp_vars, name);
+	if(List_size(funcargstack)){
+		List **l = List_get(funcargstack, List_size(funcargstack)-1);
+		var = List_find(*l, comp_vars, name);
 	}
+
 	if(!var)
 		var = List_find(vars_global, comp_vars, name);
 	return var;
 }
 
+static bool comp_func_name(void *f, void *n)
+{
+	struct Func *func=f;
+	const char* str = n;
+	return !strcmp(func->name,str);
+}
+static bool comp_internal_func(void *f, void *name)
+{
+	struct f_unary *_f=f;
+	return !strcmp(_f->name,name);
+}
+bool func_used(char* name)
+{
+	return (size_t)Buff_find((char*)f_unary,(char*)f_unary+sizeof(f_unary), sizeof(struct f_unary),comp_internal_func,name)
+	+(size_t)Buff_find((char*)f_binary,(char*)f_binary+sizeof(f_binary), sizeof(struct f_binary),comp_internal_func,name);
+}
 void print(void *a)
 {
 	struct Variable *v =a;
