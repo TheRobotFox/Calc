@@ -101,10 +101,13 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_Calc_OBJECTS = Calc.$(OBJEXT) lex.$(OBJEXT) List.$(OBJEXT)
+am_Calc_OBJECTS = Calc-Calc-Calc.$(OBJEXT) Calc-Calc-lex.$(OBJEXT) \
+	Calc-List.$(OBJEXT)
 Calc_OBJECTS = $(am_Calc_OBJECTS)
 Calc_LDADD = $(LDADD)
 Calc_DEPENDENCIES =
+Calc_LINK = $(CCLD) $(Calc_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
+	-o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -121,6 +124,10 @@ DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 AM_V_CC = $(am__v_CC_@AM_V@)
@@ -174,8 +181,8 @@ ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
 AM_RECURSIVE_TARGETS = cscope
-am__DIST_COMMON = $(srcdir)/Makefile.in Calc.c Calc.h compile depcomp \
-	install-sh lex.c missing ylwrap
+am__DIST_COMMON = $(srcdir)/Makefile.in Calc-Calc.c Calc-Calc.h \
+	Calc-lex.c compile depcomp install-sh missing ylwrap
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -284,8 +291,9 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 Calc_SOURCES = Calc.y lex.l List.c 
-AM_YFLAGS = -d
-AM_LFLAGS = --header-file=lex.h
+Calc_CFLAGS = -s -O3
+Calc_YFLAGS = -d
+Calc_LFLAGS = --header-file=lex.h
 LDADD = -lm -lfl
 all: all-am
 
@@ -366,13 +374,13 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-Calc.h: Calc.c
-	@if test ! -f $@; then rm -f Calc.c; else :; fi
-	@if test ! -f $@; then $(MAKE) $(AM_MAKEFLAGS) Calc.c; else :; fi
+Calc-Calc.h: Calc-Calc.c
+	@if test ! -f $@; then rm -f Calc-Calc.c; else :; fi
+	@if test ! -f $@; then $(MAKE) $(AM_MAKEFLAGS) Calc-Calc.c; else :; fi
 
 Calc$(EXEEXT): $(Calc_OBJECTS) $(Calc_DEPENDENCIES) $(EXTRA_Calc_DEPENDENCIES) 
 	@rm -f Calc$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(Calc_OBJECTS) $(Calc_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(Calc_LINK) $(Calc_OBJECTS) $(Calc_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -380,9 +388,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Calc.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/List.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lex.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Calc-Calc-Calc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Calc-Calc-lex.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Calc-List.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -398,11 +406,63 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
+Calc-Calc-Calc.o: Calc-Calc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(Calc_CFLAGS) $(CFLAGS) -MT Calc-Calc-Calc.o -MD -MP -MF $(DEPDIR)/Calc-Calc-Calc.Tpo -c -o Calc-Calc-Calc.o `test -f 'Calc-Calc.c' || echo '$(srcdir)/'`Calc-Calc.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/Calc-Calc-Calc.Tpo $(DEPDIR)/Calc-Calc-Calc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='Calc-Calc.c' object='Calc-Calc-Calc.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(Calc_CFLAGS) $(CFLAGS) -c -o Calc-Calc-Calc.o `test -f 'Calc-Calc.c' || echo '$(srcdir)/'`Calc-Calc.c
+
+Calc-Calc-Calc.obj: Calc-Calc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(Calc_CFLAGS) $(CFLAGS) -MT Calc-Calc-Calc.obj -MD -MP -MF $(DEPDIR)/Calc-Calc-Calc.Tpo -c -o Calc-Calc-Calc.obj `if test -f 'Calc-Calc.c'; then $(CYGPATH_W) 'Calc-Calc.c'; else $(CYGPATH_W) '$(srcdir)/Calc-Calc.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/Calc-Calc-Calc.Tpo $(DEPDIR)/Calc-Calc-Calc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='Calc-Calc.c' object='Calc-Calc-Calc.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(Calc_CFLAGS) $(CFLAGS) -c -o Calc-Calc-Calc.obj `if test -f 'Calc-Calc.c'; then $(CYGPATH_W) 'Calc-Calc.c'; else $(CYGPATH_W) '$(srcdir)/Calc-Calc.c'; fi`
+
+Calc-Calc-lex.o: Calc-lex.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(Calc_CFLAGS) $(CFLAGS) -MT Calc-Calc-lex.o -MD -MP -MF $(DEPDIR)/Calc-Calc-lex.Tpo -c -o Calc-Calc-lex.o `test -f 'Calc-lex.c' || echo '$(srcdir)/'`Calc-lex.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/Calc-Calc-lex.Tpo $(DEPDIR)/Calc-Calc-lex.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='Calc-lex.c' object='Calc-Calc-lex.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(Calc_CFLAGS) $(CFLAGS) -c -o Calc-Calc-lex.o `test -f 'Calc-lex.c' || echo '$(srcdir)/'`Calc-lex.c
+
+Calc-Calc-lex.obj: Calc-lex.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(Calc_CFLAGS) $(CFLAGS) -MT Calc-Calc-lex.obj -MD -MP -MF $(DEPDIR)/Calc-Calc-lex.Tpo -c -o Calc-Calc-lex.obj `if test -f 'Calc-lex.c'; then $(CYGPATH_W) 'Calc-lex.c'; else $(CYGPATH_W) '$(srcdir)/Calc-lex.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/Calc-Calc-lex.Tpo $(DEPDIR)/Calc-Calc-lex.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='Calc-lex.c' object='Calc-Calc-lex.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(Calc_CFLAGS) $(CFLAGS) -c -o Calc-Calc-lex.obj `if test -f 'Calc-lex.c'; then $(CYGPATH_W) 'Calc-lex.c'; else $(CYGPATH_W) '$(srcdir)/Calc-lex.c'; fi`
+
+Calc-List.o: List.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(Calc_CFLAGS) $(CFLAGS) -MT Calc-List.o -MD -MP -MF $(DEPDIR)/Calc-List.Tpo -c -o Calc-List.o `test -f 'List.c' || echo '$(srcdir)/'`List.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/Calc-List.Tpo $(DEPDIR)/Calc-List.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='List.c' object='Calc-List.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(Calc_CFLAGS) $(CFLAGS) -c -o Calc-List.o `test -f 'List.c' || echo '$(srcdir)/'`List.c
+
+Calc-List.obj: List.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(Calc_CFLAGS) $(CFLAGS) -MT Calc-List.obj -MD -MP -MF $(DEPDIR)/Calc-List.Tpo -c -o Calc-List.obj `if test -f 'List.c'; then $(CYGPATH_W) 'List.c'; else $(CYGPATH_W) '$(srcdir)/List.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/Calc-List.Tpo $(DEPDIR)/Calc-List.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='List.c' object='Calc-List.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(Calc_CFLAGS) $(CFLAGS) -c -o Calc-List.obj `if test -f 'List.c'; then $(CYGPATH_W) 'List.c'; else $(CYGPATH_W) '$(srcdir)/List.c'; fi`
+
 .l.c:
 	$(AM_V_LEX)$(am__skiplex) $(SHELL) $(YLWRAP) $< $(LEX_OUTPUT_ROOT).c $@ -- $(LEXCOMPILE)
 
+Calc-lex.c: lex.l
+	$(AM_V_LEX) \
+	$(am__skiplex) \
+	$(SHELL) $(YLWRAP) `test -f 'lex.l' || echo '$(srcdir)/'`lex.l $(LEX_OUTPUT_ROOT).c Calc-lex.c -- $(LEX) $(Calc_LFLAGS) $(LFLAGS)
+
 .y.c:
 	$(AM_V_YACC)$(am__skipyacc) $(SHELL) $(YLWRAP) $< y.tab.c $@ y.tab.h `echo $@ | $(am__yacc_c2h)` y.output $*.output -- $(YACCCOMPILE)
+
+Calc-Calc.c: Calc.y
+	$(AM_V_YACC) \
+	$(am__skipyacc) \
+	$(SHELL) $(YLWRAP) `test -f 'Calc.y' || echo '$(srcdir)/'`Calc.y y.tab.c Calc-Calc.c y.tab.h `echo Calc-Calc.c | $(am__yacc_c2h)` y.output Calc-Calc.output -- $(YACC) $(Calc_YFLAGS) $(YFLAGS)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -663,9 +723,9 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-	-rm -f Calc.c
-	-rm -f Calc.h
-	-rm -f lex.c
+	-rm -f Calc-Calc.c
+	-rm -f Calc-Calc.h
+	-rm -f Calc-lex.c
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic mostlyclean-am

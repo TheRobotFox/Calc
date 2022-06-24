@@ -61,7 +61,7 @@ struct Func *functmp;
 
 char eval_buf[512];
 %}
-%define parse.error detailed
+//%define parse.error detailed
 %glr-parser
 //%expect 5
 //%expect-rr 1
@@ -228,8 +228,8 @@ EXPR3:
 			default:
 				error("Unknown function");
 				break;
-			end:
 			}
+			end:
 			snprintf(eval_buf,512,"%20lf;",res);
 			str=eval_buf;
 		}
